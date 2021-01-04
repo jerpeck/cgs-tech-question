@@ -32,8 +32,29 @@ function changeString(str){
 }
 
 function processWord(word, idx){
-    let newWord = idx % 2 !== 0 ? reverseWord(word) : word;
-    return newWord;
+    // remove punctuation, remember with idx
+    let obj = removePunctuation(word);
+    let { punctuationlessWord, removedPunctuation } = obj;
+    let newWord = ''
+    if(/\[[0-9]+\]/.test(punctuationlessWord)){
+        let numStr = punctuationlessWord.slice(1, punctuationlessWord.length - 1);
+        let num = Number(numStr);
+        newWord = `${num} is ${isPrime(num) ? '' : 'not a '}prime`
+    } else {
+        newWord = idx % 2 !== 0 ? reverseWord(punctuationlessWord) : punctuationlessWord;
+    }
+    console.log(removedPunctuation)
+    let readyWord = restorePunctuation(newWord, removedPunctuation);
+    return readyWord;
+}
+
+function isPrime(num){
+    for(let i = 2; i < num; i++){
+        if(num % i === 0){
+            return false;
+        }
+    }
+    return true
 }
 
 function reverseWord(word){
@@ -43,6 +64,34 @@ function reverseWord(word){
         arr2.push(arr[i]);
     }
     return arr2.join('');
+}
+
+function removePunctuation(word){
+    let obj = {};
+        obj.removedPunctuation = Array.from(word).map(function(e, i){
+            if(/[^A-Za-z0-9\[\]]/.test(e)){
+                return {symbol: e, idx: i}
+        }});
+    let wordArr = Array.from(word)
+    let filteredWordArr = wordArr.filter(e => isNotPunctuation(e))
+        obj.punctuationlessWord = filteredWordArr.join('');
+    return obj
+}
+
+function restorePunctuation(str, arr){
+    let wordArr = Array.from(str);
+    arr.forEach(
+        o => {if(o !== undefined){
+                let { symbol, idx } = o;
+                wordArr.splice(idx, 0, symbol);
+            }
+        }
+    )
+    return wordArr.join('');
+}
+
+function isNotPunctuation(e){
+    return /[A-Za-z0-9\[\]]/.test(e)
 }
 
 export default changeString;
